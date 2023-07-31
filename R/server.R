@@ -541,13 +541,13 @@ main_server<-function(input, output, session) {
       ##  1.1 HTML
       if (input$outputFormat=="HTML"){
         tempReport <- file.path(tempdir(), "report.Rmd")
-        file.copy("inst/rmdfiles/report.Rmd", tempReport, overwrite = TRUE)
+        file.copy("rmdfiles/report.Rmd", tempReport, overwrite = TRUE)
         tempChild <-file.path(tempdir(), "plot_child.Rmd")
-        file.copy("inst/rmdfiles/plot_child.Rmd", tempChild, overwrite = TRUE)
+        file.copy("rmdfiles/plot_child.Rmd", tempChild, overwrite = TRUE)
         tempChildChild <-file.path(tempdir(), "plot_child_child.Rmd")
-        file.copy("inst/rmdfiles/plot_child_child.Rmd", tempChildChild, overwrite = TRUE)
+        file.copy("rmdfiles/plot_child_child.Rmd", tempChildChild, overwrite = TRUE)
         tempCSS <-file.path(tempdir(), "style_qManual.css")
-        file.copy("inst/rmdfiles/style_qManual.css", tempCSS, overwrite = TRUE)
+        file.copy("rmdfiles/style_qManual.css", tempCSS, overwrite = TRUE)
       }
       ##  2. Load the data
       tab<-questionnaires$FINAL
@@ -620,7 +620,7 @@ main_server<-function(input, output, session) {
              run_linebreak(), run_linebreak(),
              fp_p = fp_stitle_sty),
         fpar(
-          external_img(src = "inst/www/suso_wb.png", height = 1.06*2, width = 1.39*2),
+          external_img(src = "www/suso_wb.png", height = 1.06*2, width = 1.39*2),
           fp_p = fp_par(text.align = "center", padding.top = 5)
         )
       )
