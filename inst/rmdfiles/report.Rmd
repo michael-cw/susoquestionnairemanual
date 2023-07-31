@@ -18,19 +18,6 @@ params:
   
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, comment = NULL, warning = F, message = F)
-# source("helpers/source_and_packages.R")
-##  For tables
-# library(kableExtra)
-# library(knitr)
-# library(stargazer)
-# #library(plotly)
-# library(htmltools)
-# library(stringr)
-
-#    toc_depth: 2
-#    toc_float:
-#      collapsed: false
-#      smooth_scroll: true
 
 
 ```

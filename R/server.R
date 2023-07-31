@@ -538,16 +538,17 @@ main_server<-function(input, output, session) {
     },
     content = function(file) {
       ##  1. Load the template
+      fprmd<-system.file("rmdfiles", package = "susoquestionnairemanual")
       ##  1.1 HTML
       if (input$outputFormat=="HTML"){
         tempReport <- file.path(tempdir(), "report.Rmd")
-        file.copy("rmdfiles/report.Rmd", tempReport, overwrite = TRUE)
+        file.copy(file.path(fprmd, "report.Rmd"), tempReport, overwrite = TRUE)
         tempChild <-file.path(tempdir(), "plot_child.Rmd")
-        file.copy("rmdfiles/plot_child.Rmd", tempChild, overwrite = TRUE)
+        file.copy(file.path(fprmd, "plot_child.Rmd"), tempChild, overwrite = TRUE)
         tempChildChild <-file.path(tempdir(), "plot_child_child.Rmd")
-        file.copy("rmdfiles/plot_child_child.Rmd", tempChildChild, overwrite = TRUE)
+        file.copy(file.path(fprmd, "plot_child_child.Rmd"), tempChildChild, overwrite = TRUE)
         tempCSS <-file.path(tempdir(), "style_qManual.css")
-        file.copy("rmdfiles/style_qManual.css", tempCSS, overwrite = TRUE)
+        file.copy(file.path(fprmd, "style_qManual.css"), tempCSS, overwrite = TRUE)
       }
       ##  2. Load the data
       tab<-questionnaires$FINAL
@@ -601,6 +602,7 @@ main_server<-function(input, output, session) {
       ######################################################
       ###############################
       ## 2. Transformations
+      fpwww<-system.file("www", package = "susoquestionnairemanual")
 
       full_content<-list()
       ## styles title
@@ -620,11 +622,10 @@ main_server<-function(input, output, session) {
              run_linebreak(), run_linebreak(),
              fp_p = fp_stitle_sty),
         fpar(
-          external_img(src = "www/suso_wb.png", height = 1.06*2, width = 1.39*2),
+          external_img(src = file.path(fpwww, "suso_wb.png"), height = 1.06*2, width = 1.39*2),
           fp_p = fp_par(text.align = "center", padding.top = 5)
         )
       )
-
       ###########################
       ## Sections
       sections<-unique(tab$Section)
@@ -680,7 +681,7 @@ main_server<-function(input, output, session) {
     }
     return(full_content)
   })
-  dwl_reportSRV("wordManual",
+  dwl_reportSRV("wordManual", wordstyles = file.path(system.file("rmdfiles", package = "susoquestionnairemanual"), "FINAL_report_for_download.docx"),
                 content = full_content)
   ################################################################################################
   ###############################F     i     N####################################################
