@@ -39,9 +39,19 @@ main_ui<-function(request){
                   }
                   .tippy-tooltip.suso-theme {
                     background-color: #0d47a1;
-                    border: 2px solid orange;
                     font-weight: bold;
                     color: #fff;
+                  }
+                  .tippy-tooltip.material-theme {
+                    background-color: #0d47a1;
+                    font-weight: bold;
+                    color: #fff;
+                  }
+                  .tippy-tooltip.material-red-theme {
+                    color: #fff;
+                    background-color: #a10d47;
+                    font-weight: bold;
+                    border-color: #2e6da4;
                   }
                   #topText .card {
                     height: 50vh;
@@ -63,7 +73,7 @@ main_ui<-function(request){
                            offset = 20,
                            size = "small",
                            showOnInit = "true",
-                           theme = "suso"),
+                           theme = "material"),
                 tippy_this("loadQuestionnaire",
                            "Load the selected questionnaire for the manual!",
                            placement = "top-end",
@@ -71,7 +81,7 @@ main_ui<-function(request){
                            offset = 20,
                            size = "small",
                            showOnInit = "true",
-                           theme = "suso"),
+                           theme = "material"),
                 tippy_this("outputFormat",
                            "Select the desired format before uploading",
                            placement = "top-end",
@@ -79,15 +89,7 @@ main_ui<-function(request){
                            offset = 20,
                            size = "small",
                            showOnInit = "true",
-                           theme = "suso"),
-                tippy_this("manual",
-                           "Generates and downloads the manual",
-                           placement = "top-end",
-                           arrow = "true",
-                           offset = 20,
-                           size = "small",
-                           showOnInit = "true",
-                           theme = "suso"),
+                           theme = "material"),
                 material_row(material_column(width=10),
 
                              ###############################################################################
@@ -131,12 +133,12 @@ main_ui<-function(request){
                                                         ))),
                              material_column(width = 1,
                                              shinyjs::disabled(
-                                             shiny::div(id = "serversettingserasediv",
-                                             actionButton("suso.erase",
-                                                             "Erase Settings",
-                                                             style = "background-color:#B71C1C;",
-                                                             icon = icon("save"))
-                                             )))),
+                                               shiny::div(id = "serversettingserasediv",
+                                                          actionButton("suso.erase",
+                                                                       "Erase Settings",
+                                                                       style = "background-color:#B71C1C;",
+                                                                       icon = icon("save"))
+                                               )))),
                 ###############################################################################
                 material_side_nav(
                   fixed = FALSE,
@@ -177,9 +179,9 @@ main_ui<-function(request){
                                      material_column(
                                        width = 10,
                                        shiny::actionButton("loadQuestionnaire",
-                                                       "Load Questionnaire",
-                                                       icon = icon("download"),
-                                                       style="color: #FFFFFF; background-color: #0d47a1; width: 120%;
+                                                           "Load Questionnaire",
+                                                           icon = icon("download"),
+                                                           style="color: #FFFFFF; background-color: #0d47a1; width: 120%;
                                                               border-color: #0d47a1; margin:0% 0% 0% -10%;"
                                        )),
                                      material_column(
@@ -193,8 +195,8 @@ main_ui<-function(request){
                                      material_column (
                                        width = 8,
                                        div(id = "framediv",
-                                       zipFileInput(id = "translation",label = "Upload Translation (.csv!)",
-                                                    accept = (c("text/csv", ".csv")))
+                                           zipFileInput(id = "translation",label = "Upload Translation (.csv!)",
+                                                        accept = (c("text/csv", ".csv")))
                                        )
                                      ),
                                      material_column (
@@ -220,7 +222,15 @@ main_ui<-function(request){
                                        width = 10,
                                        downloadButton("manual", "Generate HTML Manual",
                                                       style="color: #FFFFFF; background-color: #0d47a1; width: 120%;
-                                                              border-color: #0d47a1; margin:0% 0% 0% -10%;")
+                                                              border-color: #0d47a1; margin:0% 0% 0% -10%;"),
+                                       tippy_this("manual",
+                                                  "Generates and downloads the HTML manual",
+                                                  placement = "top-end",
+                                                  arrow = "true",
+                                                  offset = 20,
+                                                  size = "small",
+                                                  showOnInit = "true",
+                                                  theme = "material")
                                      ),
                                      material_column(
                                        width = 1)
@@ -231,7 +241,17 @@ main_ui<-function(request){
                                      material_column(width = 1),
                                      material_column(
                                        width = 10,
-                                       dwl_reportUI("wordManual", " Generate DOC Manual")
+                                       div(id = "manual_doc",
+                                           dwl_reportUI("wordManual", " Generate DOC Manual")
+                                       ),
+                                       tippy_this("manual_doc",
+                                                  "Generates and downloads the WORD manual",
+                                                  placement = "top-end",
+                                                  arrow = "true",
+                                                  offset = 20,
+                                                  size = "small",
+                                                  showOnInit = "true",
+                                                  theme = "material")
                                      ),
                                      material_column(
                                        width = 1)
@@ -254,7 +274,16 @@ main_ui<-function(request){
                       width = 10,
                       actionButton("loadProg", "Load Manual",
                                    style="width: 100%; color: #fff; background-color: #0d47a1; border-color: #2e6da4",
-                                   icon = icon("file-upload"))
+                                   icon = icon("file-upload")),
+                      tippy_this("loadProg",
+                                 "If you have stored your work from previous sessions, you will see it in the table bellow. Just select the
+                                 desired questionnaire, and click this button. Make sure, you have loaded the original questionnaire first.",
+                                 placement = "top-end",
+                                 arrow = "true",
+                                 offset = 20,
+                                 size = "small",
+                                 showOnInit = "true",
+                                 theme = "material")
 
                     ),
                     material_column(
@@ -275,7 +304,15 @@ main_ui<-function(request){
                       width = 10,
                       actionButton("saveProg", "Save Manual",
                                    style="width: 100%; color: #fff; background-color: #a10d47; border-color: #2e6da4",
-                                   icon = icon("save"))
+                                   icon = icon("save")),
+                      tippy_this("saveProg",
+                                 "To save your work progress, click here.",
+                                 placement = "top-end",
+                                 arrow = "true",
+                                 offset = 20,
+                                 size = "small",
+                                 showOnInit = "true",
+                                 theme = "material-red")
                     ),
                     material_column(
                       width = 1)
@@ -340,10 +377,12 @@ main_ui<-function(request){
                 material_side_nav_tab_content(
                   side_nav_tab_id = "review",
                   material_row(
-                    material_column(
-                      width = 12,
-                      tags$h3("Review"),
-                      DT::dataTableOutput("REVIEW")
+                    #material_column(2),
+                    #material_column(
+                    # width = 10,
+                    div(id="review", style = "margin: auto; width: 95%;",
+                        tags$h3("Review"),
+                        DT::dataTableOutput("REVIEW", width = "95vw")
                     )
                   )
                 )
