@@ -471,7 +471,7 @@ main_server<-function(input, output, session) {
       val<-allValidations[VariableName==check_item$VariableName]
       req(nrow(val)>0)
       val<-val[,.(Expression, Message)]
-      val<-datatable(val, options = list(pageLength = 10, dom="t")) %>%
+      val<-datatable(val, options = list(pageLength = 1, dom="tp")) %>%
         # formatStyle('Section', columnWidth = '5%') %>%
         # formatStyle('type', columnWidth = '5%') %>%
         # formatStyle('VariableName', columnWidth = '5%') %>%
