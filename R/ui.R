@@ -44,19 +44,20 @@ main_ui<-function(request){
                     color: #fff;
                   }
                   #topText .card {
-                    height: 450px;
+                    height: 50vh;
                   }
                   textarea {
-                    width: 350%;
-                    height: 250px;
+                    width: 45vw;
+                    height: 20vh;
                     margin: 0;
                     padding: 0;
                     column-fill: balance;
                   }"
                 ),
                 ##  TOOL TIPS
-                tippy_this("loadQuest",
-                           "Import from server requires SERVER SETTINGS!",
+                tippy_this("framediv",
+                           "Upload the translation file from the Survey Solutions Designer.
+                           The file must be in CSV format, not EXCEL!",
                            placement = "top-end",
                            arrow = "true",
                            offset = 20,
@@ -191,8 +192,10 @@ main_ui<-function(request){
                                        width = 2),
                                      material_column (
                                        width = 8,
+                                       div(id = "framediv",
                                        zipFileInput(id = "translation",label = "Upload Translation (.csv!)",
                                                     accept = (c("text/csv", ".csv")))
+                                       )
                                      ),
                                      material_column (
                                        width = 2)
@@ -317,7 +320,6 @@ main_ui<-function(request){
                         material_row(
                           material_column(width = 6,
                                           textAreaInput("qtext", "Please Provide the Instructions for this Question",
-                                                        #width = '600px', height = '200px',
                                                         placeholder = "Instructions", resize = "both"),
                                           actionButton("PREV", "Previous Item",
                                                        style="color: #fff; background-color: #0d47a1; border-color: #2e6da4",
@@ -325,7 +327,6 @@ main_ui<-function(request){
                           ),
                           material_column(width = 6,
                                           textAreaInput("qExamp", "Please Provide an Example for this Question",
-                                                        #width = '600px', height = '200px',
                                                         placeholder = "Example", resize = "both"),
                                           actionButton("NEXT", "Next Item",
                                                        style="color: #fff; background-color: #0d47a1; border-color: #2e6da4",

@@ -28,7 +28,6 @@ main_server<-function(input, output, session) {
   fields<-reactiveVal(c("suso.server", "suso.user", "suso.pass"))
   observe({
     admfile<-req(fpadm())
-
     if(file.exists(admfile)){
       tmp.admin<-readRDS(paste0(admfile))
     }  else {
