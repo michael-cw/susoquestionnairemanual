@@ -13,6 +13,7 @@ Imports:
     data.table,
     DT,
     jsonlite,
+    lubridate,
     officer,
     readr,
     rmarkdown,

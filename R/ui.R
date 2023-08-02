@@ -117,7 +117,12 @@ main_ui<-function(request){
                                                             material_column(
                                                               width = 6,
                                                               passwordInput("suso.pass", "Provide SuSo password",
-                                                                            placeholder = "API Password"),br(),br())
+                                                                            placeholder = "API Password"),br(),br()),
+                                                            material_column(
+                                                              width = 6,
+                                                              textInput("suso.workspace", "Provide SuSo workspace",
+                                                                            value = "primary"),br(),br(),
+                                                              )
                                                           ),
                                                           material_row(
                                                             material_column(
@@ -215,6 +220,7 @@ main_ui<-function(request){
                     material_column(
                       width = 1)
                   ),
+                  div(id = "manualdiv",
                   conditionalPanel("input.outputFormat=='HTML'",
                                    material_row(
                                      material_column(width = 1),
@@ -223,7 +229,7 @@ main_ui<-function(request){
                                        downloadButton("manual", "Generate HTML Manual",
                                                       style="color: #FFFFFF; background-color: #0d47a1; width: 120%;
                                                               border-color: #0d47a1; margin:0% 0% 0% -10%;"),
-                                       tippy_this("manual",
+                                       tippy_this("manualdiv",
                                                   "Generates and downloads the HTML manual",
                                                   placement = "top-end",
                                                   arrow = "true",
@@ -235,7 +241,7 @@ main_ui<-function(request){
                                      material_column(
                                        width = 1)
                                    )
-                  ),
+                  )),
                   conditionalPanel("input.outputFormat=='Word'",
                                    material_row(
                                      material_column(width = 1),
@@ -245,7 +251,7 @@ main_ui<-function(request){
                                            dwl_reportUI("wordManual", " Generate DOC Manual")
                                        ),
                                        tippy_this("manual_doc",
-                                                  "Generates and downloads the WORD manual",
+                                                  "Generates and downloads the MS WORD manual",
                                                   placement = "top-end",
                                                   arrow = "true",
                                                   offset = 20,
@@ -257,17 +263,26 @@ main_ui<-function(request){
                                        width = 1)
                                    )
                   ),
+                  div(id = "manualpptdiv",
                   conditionalPanel("input.outputFormat=='PPT'",
                                    material_row(
                                      material_column(width = 1),
                                      material_column(
                                        width = 10,
-                                       dwl_reportUI("pptManual", " Generate PPT Manual")
+                                       dwl_reportUI("pptManual", " Generate PPT Manual"),
+                                       tippy_this("manualpptdiv",
+                                                  "Generates and downloads the MS Powerpoint manual",
+                                                  placement = "top-end",
+                                                  arrow = "true",
+                                                  offset = 20,
+                                                  size = "small",
+                                                  showOnInit = "true",
+                                                  theme = "material")
                                      ),
                                      material_column(
                                        width = 1)
                                    )
-                  ),
+                  )),
                   material_row(
                     material_column(width = 1),
                     material_column(

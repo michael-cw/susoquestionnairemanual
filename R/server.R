@@ -25,7 +25,7 @@ main_server<-function(input, output, session) {
     fpadm(admfile)
   })
   # Check if server settings are stored & work
-  fields<-reactiveVal(c("suso.server", "suso.user", "suso.pass"))
+  fields<-reactiveVal(c("suso.server", "suso.user", "suso.pass", "suso.workspace"))
   observe({
     admfile<-req(fpadm())
     if(file.exists(admfile)){
@@ -45,22 +45,29 @@ main_server<-function(input, output, session) {
           "Checking Credentials ..."
         )
       )
-      credcheck<-suso_PwCheck()$status_code[1]
+      credcheck<-suso_PwCheck(workspace = admin.vars[["suso.workspace"]])$status_code[1]
+      waiter::waiter_hide()
       if (credcheck==200) {
+        ADMIN$settings<-admin.vars
         shinyjs::disable("serversettingsdiv")
         shinyjs::enable("serversettingserasediv")
       } else {
         admin.vars<-rep("TBD", length(admin.vars))
         names(admin.vars)<-fields()
         shiny::showNotification("Wrong Credentials")
+        ADMIN$settings<-NULL
+
+        req(FALSE)
       }
 
     } else {
       admin.vars<-c(rep("TBD", length(fields())))
       names(admin.vars)<-fields()
+      shiny::showNotification("Some credentials are missing. Please reset!")
+      ADMIN$settings<-NULL
+      req(FALSE)
     }
-    waiter::waiter_hide()
-    ADMIN$settings<-admin.vars
+
 
   }, priority = 0)
 
@@ -88,20 +95,24 @@ main_server<-function(input, output, session) {
         "Checking Credentials ..."
       )
     )
-    credcheck<-suso_PwCheck()$status_code[1]
+    credcheck<-suso_PwCheck(workspace = admin.vars[["suso.workspace"]])$status_code[1]
+    waiter::waiter_hide()
+
     if (credcheck==200) {
       saveRDS(admin.vars, admfile)
       shinyjs::disable("serversettingsdiv")
       shinyjs::enable("serversettingserasediv")
+      ADMIN$settings<-admin.vars
 
     } else {
       admin.vars<-rep("TBD", length(admin.vars))
       names(admin.vars)<-fields()
       shiny::showNotification("Wrong Credentials")
+      ADMIN$settings<-NULL
+      req(FALSE)
     }
     ##  2. Hand Over Settings
-    waiter::waiter_hide()
-    ADMIN$settings<-admin.vars
+
   }, priority = -2, ignoreInit = T)
 
   ##  iv) erase settings
@@ -114,6 +125,12 @@ main_server<-function(input, output, session) {
     shinyjs::enable("serversettingsdiv")
     shinyjs::disable("serversettingserasediv")
     ADMIN$settings<-NULL
+
+    # update selection
+    update_material_dropdown(session = session,
+                             input_id = "susoQuestionnaire",
+                             choices = c("NONE LOADED"),
+                             value = "NONE LOADED")
   }, ignoreInit = T)
 
   ##  3. Load the questionnaires for selection
@@ -121,15 +138,17 @@ main_server<-function(input, output, session) {
   observe({
     settings<-req(ADMIN$settings)
     if (SurveySolutionsAPI::suso_PwCheck(
-      settings[["suso.server"]], settings[["suso.user"]], settings[["suso.pass"]]
+      settings[["suso.server"]], settings[["suso.user"]], settings[["suso.pass"]], settings[["suso.workspace"]]
     )$status_code[1]!=200) {
 
       settings<-rep("TBD", length(fields()))
       names(settings)<-fields()
+      req(FALSE)
     }
     ##  if settings check is ok, questionnaires are loaded.
     if (sum(grepl(x=settings,pattern = "TBD"))==0){
-      tab<-data.table(SurveySolutionsAPI::suso_getQuestDetails(), key = c("Title", "Version"))
+      tab<-data.table(SurveySolutionsAPI::suso_getQuestDetails(workspace = settings[["suso.workspace"]]),
+                      key = c("Title", "Version"))
 
       tab[,c("date", "time"):=tstrsplit(LastEntryDate, "T", fixed=TRUE)][]
       tab[,time:=as.ITime(time)]
@@ -152,25 +171,27 @@ main_server<-function(input, output, session) {
   ##  4.1 From SERVER
   observeEvent(input$loadQuestionnaire, {
     if(input$susoQuestionnaire!="NONE LOADED") {
-      # settings<-ADMIN$settings
-      # if (SurveySolutionsAPI::suso_PwCheck()$status_code[1]!=200) {
-      #
-      #   settings<-rep("TBD", length(admin.vars))
-      #   names(settings)<-fields()
-      #   req(FALSE)
-      # }
+      waiter::waiter_show(
+        color = "rgba(13, 71, 161, 0.7)",
+        html = tagList(
+          spin_fading_circles(),
+          "Loading Questionnaire ..."
+        )
+      )
 
-      #if (sum(grepl(x=settings,pattern = "TBD"))==0){
       qid<-str_split(input$susoQuestionnaire, "_", simplify = T)[1,1]
       v<-str_split(input$susoQuestionnaire, "_", simplify = T)[1,2]
-      #"b4c78852-c1d7-4532-ba3f-7cc35ead489a"
-      qestStruct<-SurveySolutionsAPI::suso_getQuestDetails(quid = qid, version = v, operation.type = "structure")
+      qestStruct<-SurveySolutionsAPI::suso_getQuestDetails(workspace = input$suso.workspace,
+                                                           quid = qid,
+                                                           version = v,
+                                                           operation.type = "structure")
 
       questionnaires$qestStruct<-qestStruct$q
       questionnaires$validations<-qestStruct$val
       questionnaires$Title<-questionnaires$tab[QuestionnaireId==qid & Version==v, Title]
       rv$qCOUNTER<-1
-      #}
+
+      waiter::waiter_hide()
     }
   }, ignoreInit = T)
 
@@ -266,7 +287,6 @@ main_server<-function(input, output, session) {
     shiny::validate(need(input$tpkDirTable_rows_selected, message = F))
 
     ls<-ls[input$tpkDirTable_rows_selected, "Files"]
-    print(ls)
     questionnaires$Title<-strsplit(ls$Files, ".csv")[[1]][1]
     fn<-file.path(fpDIR(), ls)
     loadMan<-readr::read_csv(file = fn, locale = locale("ro"),
@@ -536,6 +556,13 @@ main_server<-function(input, output, session) {
       )
     },
     content = function(file) {
+      waiter::waiter_show(
+        color = "rgba(13, 71, 161, 0.7)",
+        html = tagList(
+          spin_fading_circles(),
+          "Generating HTML document ..."
+        )
+      )
       ##  1. Load the template
       fprmd<-system.file("rmdfiles", package = "susoquestionnairemanual")
       ##  1.1 HTML
@@ -575,10 +602,18 @@ main_server<-function(input, output, session) {
                                         envir = new.env(parent = globalenv())
                       )
       )
+      waiter::waiter_hide()
     }
   )
 
-  full_content<-eventReactive(input$`wordManual-generateReportInt`, {
+  generate_manual<-reactive({
+    list(
+      input$`wordManual-generateReportInt`,
+      input$`pptManual-generateReportInt`
+
+    )
+  })
+  full_content<-eventReactive(generate_manual(), {
     if(input$outputFormat=="Word") {
       ##  2. Load the data
       tab<-questionnaires$FINAL
@@ -633,6 +668,8 @@ main_server<-function(input, output, session) {
         full_content$sec_title[[paste0("sec",i)]]<-sprintf("Section %d",sections[i])
 
       }
+      # Remove HTML tags in question text:
+      tab[, QuestionText:=stringr::str_remove_all(string = QuestionText, pattern = "<.*?>")]
 
       ############################
       ## Questions (with fpar)
@@ -642,7 +679,7 @@ main_server<-function(input, output, session) {
       fp_hea<-fp_text(color = "#0d47a1", font.size = 14, bold = T)
       fp_hea_sty<-fp_par(text.align = "center", padding.bottom = 1, keep_with_next = T)
       fp_qtt<-fp_text(color = "#0d47a1", font.size = 12, bold = F)
-      fp_qtt_sty<-fp_par(text.align = "left", padding.bottom = 2)
+      fp_qtt_sty<-fp_par(text.align = "justify", padding.bottom = 2)
       full_content$sec_para<-list()
       for(i in 1:length(sections)){
         paras_sub<-subset(tab, Section==sections[i])
@@ -677,11 +714,140 @@ main_server<-function(input, output, session) {
       ######################################################
       #})
 
+    } else if(input$outputFormat=="PPT") {
+      ##  2. Load the data
+      tab<-questionnaires$FINAL
+      req(tab)
+
+      # Title
+      qTitle<-questionnaires$Title
+      tab[,Instruction:=str_replace_all(Instruction, "[^[:print:]]", "")]
+      tab[,Example:=str_replace_all(Example, "[^[:print:]]", "")]
+
+      validations<-questionnaires$validations
+
+      shiny::validate(need(tab, message = "You have not provided any comments yet!"))
+
+
+      ##############
+      ## create the content
+      # withProgress(message = 'Report generation in progress',
+      #              value = 0,
+      #              {
+      ######################################################
+      ###############################
+      ## 2. Transformations
+      fpwww<-system.file("www", package = "susoquestionnairemanual")
+
+      full_content<-list()
+      ## styles title
+      fp_title<-fp_text(color = "#002244", font.size = 30, bold = T)
+      fp_title_sty<-fp_par(text.align = "left", padding.bottom = 1,
+                           border.bottom = fp_border(color = "black"))
+      fp_stitle<-fp_text(color = "#98252B", font.size = 18, bold = F)
+      fp_stitle_sty<-fp_par(text.align = "left", padding.bottom = 0)
+      ##
+      full_content$doc_title<-list(
+        fpar(ftext(qTitle, prop = fp_title),
+             fp_p = fp_par(text.align = "left")),
+        fpar(ftext("Questionnaire Manual Application v1.0.0", prop = fp_stitle), fp_p = fp_stitle_sty),
+        fpar(ftext(as.character(Sys.Date()), prop = fp_stitle),
+             fp_p = fp_stitle_sty)
+        # fpar(
+        #   external_img(src = file.path(fpwww, "suso_wb.png"), height = 1.06*2, width = 1.39*2),
+        #   fp_p = fp_par(text.align = "center", padding.top = 5)
+        # )
+      )
+
+      # Remove HTML tags in question text:
+      tab[, QuestionText:=stringr::str_remove_all(string = QuestionText, pattern = "<.*?>")]
+
+      ############################
+      ## Questions (with fpar)
+      ## 1. Styles
+      fp_qte<-fp_text(color = "#98252B", font.size = 22, bold = T)
+      fp_qte_sty<-fp_par(text.align = "center", padding.bottom = 2, keep_with_next = T)
+      fp_hea<-fp_text(color = "#002244", font.size = 16, bold = T)
+      fp_hea_sty<-fp_par(text.align = "center", padding.bottom = 1, keep_with_next = T)
+      fp_qtt<-fp_text(color = "#002244", font.size = 13, bold = F)
+      fp_qtt_sty<-fp_par(text.align = "justify", padding.bottom = 2)
+      fp_ftr<-fp_text(color = "#00224480", font.size = 10, bold = F)
+      fp_ftr_sty<-fp_par(text.align = "center", padding.bottom = 2)
+      fp_fdt_sty<-fp_par(text.align = "right", padding.bottom = 2)
+      fp_fslnum_sty<-fp_par(text.align = "right", padding.bottom = 2)
+
+      # get date for footer
+      TDATE<-as.character(lubridate::date(Sys.time()))
+
+      ## Sections
+      sections<-unique(tab$Section)
+      full_content$sec_title<-list()
+      for(i in 1:length(sections)){
+        full_content$sec_title[[paste0("sec",i)]]<-list(
+          title = sprintf("Section %d",sections[i]),
+          ftr = fpar(ftext("Survey Solutions Questionnaire Manual", fp_ftr), fp_p = fp_ftr_sty),
+          fdt = fpar(ftext(TDATE, fp_ftr), fp_p = fp_fdt_sty)
+          )
+      }
+      # create list for loop
+      full_content$sec_para<-list()
+
+      # get slide number
+      sldNum<-2
+      for(i in 1:length(sections)){
+        paras_sub<-subset(tab, Section==sections[i])
+        paras<-nrow(paras_sub)
+        full_content$sec_para[[paste0("sec",i)]]<-list()
+        sldNum<-sldNum+1
+        ## loop over questions in sections
+        for(k in 1:(paras)){
+          qte<-ftext(paras_sub[k, QuestionText], fp_qte)
+          qhea1<-ftext("Instructions", fp_hea)
+          qin<-ftext(paras_sub[k, Instruction], fp_qtt)
+          qhea2<-ftext("Example", fp_hea)
+          qex<-ftext(paras_sub[k, Example], fp_qtt)
+          qftr<-ftext("Survey Solutions Questionnaire Manual", fp_ftr)
+          qdt<-ftext(TDATE, fp_ftr)
+          sldNumForm<-ftext(sldNum, fp_ftr)
+
+          full_content$sec_para[[paste0("sec",i)]][[paste0("para",k)]]<-
+            list(
+              ## QUESTION TEXT
+              qte=fpar(qte, fp_p = fp_qte_sty),
+              ## HEADER Instructions
+              qhea1=fpar(qhea1, fp_p = fp_hea_sty),
+              ## INSTRUCTIONS
+              quin=fpar(qin, fp_p = fp_qtt_sty),
+              ## HEADER EXAMPLE
+              qhea2=fpar(qhea2, fp_p = fp_hea_sty),
+              ## EXAMPLE
+              qex=fpar(qex, fp_p = fp_qtt_sty),
+              ## Footer
+              qftr=fpar(qftr, fp_p = fp_ftr_sty),
+              ## date
+              qdt=fpar(qdt, fp_p = fp_fdt_sty),
+              ## slide number
+              sldNum=fpar(sldNumForm, fp_p = fp_fslnum_sty)
+            );
+          sldNum<-sldNum+1
+        }
+      }
+      ######################################################
+      #})
+
     }
     return(full_content)
   })
-  dwl_reportSRV("wordManual", wordstyles = file.path(system.file("rmdfiles", package = "susoquestionnairemanual"), "FINAL_report_for_download.docx"),
-                content = full_content)
+  # generate word doc
+  dwl_reportSRV("wordManual",
+                wordstyles = file.path(system.file("rmdfiles", package = "susoquestionnairemanual"), "FINAL_report_for_download.docx"),
+                content = full_content,
+                type = "word")
+  # generate pptx
+  dwl_reportSRV("pptManual",
+                pptxstyles = file.path(system.file("rmdfiles", package = "susoquestionnairemanual"), "wb_dg_suso_modern.pptx"),
+                content = full_content,
+                type = "pptx")
   ################################################################################################
   ###############################F     i     N####################################################
 
