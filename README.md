@@ -9,6 +9,8 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
+<div align="justify">
+
 This application is part of the large set of tools, to facilitate survey
 implementation with [Survey
 Solutions](https://docs.mysurvey.solutions/). Questionnaires created in
@@ -55,3 +57,5 @@ app directory:
 library(susoquestionnairemanual)
 susoquestionnairemanual::runQuestManualAppServer()
 ```
+
+</div>

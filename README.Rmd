@@ -19,6 +19,7 @@ knitr::opts_chunk$set(
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
+<div align="justify">
 This application is part of the large set of tools, to facilitate survey implementation with
 [Survey Solutions](https://docs.mysurvey.solutions/). Questionnaires created in [Survey Solutions designer](https://designer.mysurvey.solutions/), can either be loaded directly from the data collection server, or through the upload of an exported json string. Manual content can be provide through text input fields. The resulting manual can be downloaded either es HTML, Word or PowerPoint document.
 
@@ -62,4 +63,4 @@ susoquestionnairemanual::runQuestManualAppServer()
 
 ```
 
-
+</div>
