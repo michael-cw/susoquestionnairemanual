@@ -28,9 +28,11 @@
 #' @importFrom utils unzip
 #' @importFrom tippy tippy_this
 #' @importFrom waiter spin_fading_circles
+#'
+#' @inherit shiny::runApp
 
 #' @export
-runQuestManualApp <- function() {
+runQuestManualApp <- function(launch.browser = TRUE) {
   shiny::addResourcePath("www", system.file("www", package = "susoquestionnairemanual"))
   shiny::addResourcePath("rmdfiles", system.file("rmdfiles", package = "susoquestionnairemanual"))
 
@@ -43,5 +45,5 @@ runQuestManualApp <- function() {
     ))
 
   appObj<-shiny::shinyApp(ui = main_ui, server = main_server)
-  shiny::runApp(appObj)
+  shiny::runApp(appObj, launch.browser = launch.browser)
 }

@@ -13,14 +13,14 @@ knitr::opts_chunk$set(
 )
 ```
 
-# susoquestionnairemanual shiny application
+# Survey Solutions Questionnaire Manual Generator
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 This application is part of the large set of tools, to facilitate survey implementation with
-[Survey Solutions](https://docs.mysurvey.solutions/). Questionnaires created in [Survey Solutions designer](https://designer.mysurvey.solutions/), can either be loaded directly from the data collection server, or through the upload of an exported json string.
+[Survey Solutions](https://docs.mysurvey.solutions/). Questionnaires created in [Survey Solutions designer](https://designer.mysurvey.solutions/), can either be loaded directly from the data collection server, or through the upload of an exported json string. Manual content can be provide through text input fields. The resulting manual can be downloaded either es HTML, Word or PowerPoint document.
 
 ## Installation
 
@@ -43,7 +43,7 @@ devtools::install_github("michael-cw/susoquestionnairemanual")
 
 ```
 
-## Start the application
+## Start the application from RStudio
 
 ```{r start, eval=FALSE, echo=TRUE}
 library(susoquestionnairemanual)
@@ -52,9 +52,9 @@ susoquestionnairemanual::runQuestManualApp()
 ```
 
 
-## Start the application on a shiny server
+## Start the application on a Shiny Server
 
-In case you are planning to run the application on a shiny server, you just need to create the following app.R script in your shiny server app directory:
+In case you are considering to run the application on a shiny server, you just need to create the following app.R script in your shiny server app directory:
 
 ```{r startserver, eval=FALSE, echo=TRUE}
 library(susoquestionnairemanual)

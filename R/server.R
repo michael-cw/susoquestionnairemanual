@@ -147,8 +147,17 @@ main_server<-function(input, output, session) {
     }
     ##  if settings check is ok, questionnaires are loaded.
     if (sum(grepl(x=settings,pattern = "TBD"))==0){
-      tab<-data.table(SurveySolutionsAPI::suso_getQuestDetails(workspace = settings[["suso.workspace"]]),
-                      key = c("Title", "Version"))
+      apicall<-SurveySolutionsAPI::suso_getQuestDetails(workspace = settings[["suso.workspace"]])
+      # if no data, stop and show message
+      if(length(apicall)==1 | is.null(apicall)) {
+        showNotification("No questionnaire loaded on the provided server/workspace. Please import questionnaires first!", type = "error")
+        req(FALSE)
+      } else {
+        tab<-data.table(apicall,
+                        key = c("Title", "Version"))
+      }
+
+
 
       tab[,c("date", "time"):=tstrsplit(LastEntryDate, "T", fixed=TRUE)][]
       tab[,time:=as.ITime(time)]
@@ -541,13 +550,8 @@ main_server<-function(input, output, session) {
 
 
 
-  #####################################################
-  ##  DOWNLOAD GUIDE
-  ## 1. Dialog Modal
-  # observeEvent(input$start_manual, {
-  #   # Show a modal when the button is pressed
-  #   shinyalert("Download", "Provide format:", type = "input")
-  # })
+  # HTML generation & download, uses file report.rmd, plot_child.rmd and plot_child_chil.rmd
+  # from directory rmdfiles
   output$manual <- downloadHandler(
     # For PDF output, change this to "report.pdf"
     filename = function(){
@@ -556,6 +560,14 @@ main_server<-function(input, output, session) {
       )
     },
     content = function(file) {
+      tab<-questionnaires$FINAL
+      # Check if content is available
+      if(is.null(tab)) {
+        shiny::showNotification("Please provide comments! If you have just loaded the comments and the questionnaire,
+                                make sure you have clicked NEXT at least once", type = "error")
+        req(FALSE)
+      }
+
       waiter::waiter_show(
         color = "rgba(13, 71, 161, 0.7)",
         html = tagList(
@@ -577,23 +589,20 @@ main_server<-function(input, output, session) {
         file.copy(file.path(fprmd, "style_qManual.css"), tempCSS, overwrite = TRUE)
       }
       ##  2. Load the data
-      tab<-questionnaires$FINAL
       tab[,Instruction:=str_replace_all(Instruction, "[^[:print:]]", "")]
       tab[,Example:=str_replace_all(Example, "[^[:print:]]", "")]
-      # tab[,Inst:=str_trunc(str_trim(str_squish(Instruction)), 2000, "right")][,Instruction:=NULL]
-      # tab[,Ex:=str_trunc(str_trim(str_squish(Example)), 2000, "right")][,Example:=NULL]
-      # setnames(tab, "Inst", "Instruction")
-      # setnames(tab, "Ex", "Example")
       title<-questionnaires$Title
       validations<-questionnaires$validations
-      CHECK<-list(tab, title, validations)
+      # CHECK<<-list(tab, title, validations)
+
       shiny::validate(need(tab, message = "You have not provided any comments yet!"))
       tab<-tab[,.(Section, type, VariableName, QuestionText, Instruction, Example, Featured)]
+      # remove line breaks in text-->leave other html tags
+      tab[, QuestionText:=stringr::str_remove_all(string = QuestionText, pattern = "(<br>)|(\\n)")]
 
       # Set up parameters to pass to Rmd document
       params <- list(questionnaireDT = tab, qTitle=title, qValidations = validations)
 
-      # wdold<-getwd()
       # setwd(tempdir())
       withr::with_dir(tempdir(),
                       ## 3. KNIT the documdent
@@ -605,7 +614,7 @@ main_server<-function(input, output, session) {
       waiter::waiter_hide()
     }
   )
-
+  # generate reactive to acivate dwl
   generate_manual<-reactive({
     list(
       input$`wordManual-generateReportInt`,
@@ -613,10 +622,18 @@ main_server<-function(input, output, session) {
 
     )
   })
+
+  # creates content for WORD and PPT
   full_content<-eventReactive(generate_manual(), {
+    tab<-questionnaires$FINAL
+    # check if data loaded stop w message if not
+    if(is.null(tab)) {
+      shiny::showNotification("Please provide comments! If you have just loaded the comments and the questionnaire,
+                                make sure you have clicked NEXT at least once", type = "error")
+      req(FALSE)
+    }
     if(input$outputFormat=="Word") {
       ##  2. Load the data
-      tab<-questionnaires$FINAL
       req(tab)
       qTitle<-questionnaires$Title
       tab[,Instruction:=str_replace_all(Instruction, "[^[:print:]]", "")]
@@ -716,7 +733,6 @@ main_server<-function(input, output, session) {
 
     } else if(input$outputFormat=="PPT") {
       ##  2. Load the data
-      tab<-questionnaires$FINAL
       req(tab)
 
       # Title
@@ -787,7 +803,7 @@ main_server<-function(input, output, session) {
           title = sprintf("Section %d",sections[i]),
           ftr = fpar(ftext("Survey Solutions Questionnaire Manual", fp_ftr), fp_p = fp_ftr_sty),
           fdt = fpar(ftext(TDATE, fp_ftr), fp_p = fp_fdt_sty)
-          )
+        )
       }
       # create list for loop
       full_content$sec_para<-list()
@@ -838,12 +854,12 @@ main_server<-function(input, output, session) {
     }
     return(full_content)
   })
-  # generate word doc
+  # generate word doc -> styles are currently under rmdfiles, however in the future upload may be an option.
   dwl_reportSRV("wordManual",
                 wordstyles = file.path(system.file("rmdfiles", package = "susoquestionnairemanual"), "FINAL_report_for_download.docx"),
                 content = full_content,
                 type = "word")
-  # generate pptx
+  # generate pptxtyles are currently under rmdfiles, however in the future upload may be an option.
   dwl_reportSRV("pptManual",
                 pptxstyles = file.path(system.file("rmdfiles", package = "susoquestionnairemanual"), "wb_dg_suso_modern.pptx"),
                 content = full_content,

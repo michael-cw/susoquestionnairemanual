@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# susoquestionnairemanual shiny application
+# Survey Solutions Questionnaire Manual Generator
 
 <!-- badges: start -->
 
@@ -14,7 +14,9 @@ implementation with [Survey
 Solutions](https://docs.mysurvey.solutions/). Questionnaires created in
 [Survey Solutions designer](https://designer.mysurvey.solutions/), can
 either be loaded directly from the data collection server, or through
-the upload of an exported json string.
+the upload of an exported json string. Manual content can be provide
+through text input fields. The resulting manual can be downloaded either
+es HTML, Word or PowerPoint document.
 
 ## Installation
 
@@ -36,18 +38,18 @@ install.packages("devtools")
 devtools::install_github("michael-cw/susoquestionnairemanual")
 ```
 
-## Start the application
+## Start the application from RStudio
 
 ``` r
 library(susoquestionnairemanual)
 susoquestionnairemanual::runQuestManualApp()
 ```
 
-## Start the application on a shiny server
+## Start the application on a Shiny Server
 
-In case you are planning to run the application on a shiny server, you
-just need to create the following app.R script in your shiny server app
-directory:
+In case you are considering to run the application on a shiny server,
+you just need to create the following app.R script in your shiny server
+app directory:
 
 ``` r
 library(susoquestionnairemanual)

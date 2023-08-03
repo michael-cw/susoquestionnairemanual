@@ -129,11 +129,10 @@ dwl_reportSRV<-function(id, content = NULL,
             ## 2.4. Tempfile
             ##############################
             ## 2. Switch working directory for report
-            wdOld<-getwd()
-            setwd(tempdir())
-            on.exit(setwd(wdOld))
-            doc.full %>%
-              print(target = "report_for_download_v1.docx")
+            withr::with_dir(tempdir(),
+                            {doc.full %>%
+                                print(target = "report_for_download_v1.docx")}
+            )
           })
         } else if(type=="pptx"){
           # 1. PPTX Document
@@ -228,11 +227,10 @@ dwl_reportSRV<-function(id, content = NULL,
             ## 2.4. Tempfile
             ##############################
             ## 2. Switch working directory for report
-            wdOld<-getwd()
-            setwd(tempdir())
-            on.exit(setwd(wdOld))
-            doc.full %>%
-              print(target = "report_for_download_v1.pptx")
+            withr::with_dir(tempdir(),
+                            {doc.full %>%
+                                print(target = "report_for_download_v1.pptx")}
+            )
           })
 
 
@@ -251,14 +249,13 @@ dwl_reportSRV<-function(id, content = NULL,
           }
         },
         content = function(file) {
-          wdOld<-getwd()
-          setwd(tempdir())
-          on.exit(setwd(wdOld))
-          if(type=="word"){
-            file.copy("report_for_download_v1.docx", file)
-          } else if(type=="pptx") {
-            file.copy("report_for_download_v1.pptx", file)
-          }
+          withr::with_dir(tempdir(),
+                          {if(type=="word"){
+                            file.copy("report_for_download_v1.docx", file)
+                          } else if(type=="pptx") {
+                            file.copy("report_for_download_v1.pptx", file)}
+                          }
+          )
 
         }, contentType = NULL)
 
