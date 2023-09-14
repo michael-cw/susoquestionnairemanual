@@ -9,18 +9,74 @@
 
 ###########
 main_server<-function(input, output, session) {
+
+  ## START UP MODAL FOR USER
+  startupkeyusr <- startupModalSRV("startupModal",
+                                   useronly = T,
+                                   welcometitle = "Welcome to the Survey Solutions Questionnaire Manual Application!",
+                                   welcomemessage = HTML("Please make sure you have read the relevant
+                                              <a href='https://michael-cw.github.io/susoquestionnairemanual/index.html' target='_blank'>documentation</a>.
+                                              To continue please provide your username, so your personal working directory can be created.")
+                                   )
+  # file path
+  fp<-reactiveVal(NULL)
+  # filepath for admin
+  fpadmDIR<-reactiveVal(NULL)
+  # for manuals
+  fpDIR<-reactiveVal(NULL)
+  observeEvent(startupkeyusr$user(), {
+    usr <- req(startupkeyusr$user())
+    # user appdir
+    appdir <- file.path(tools::R_user_dir("susoquestionnairemanual", which = "data"))
+    appdir <- file.path(appdir, paste0(usr))
+
+    if (!dir.exists(appdir)) {
+      dir.create(appdir, recursive = TRUE, showWarnings = FALSE)
+    }
+    fp(appdir)
+
+    # GADM file dir
+    appdir_sub <- file.path(appdir, "admin")
+    if (!dir.exists(appdir_sub)) {
+      dir.create(appdir_sub, recursive = TRUE, showWarnings = FALSE)
+    }
+    fpadmDIR(appdir_sub)
+
+    # Paradata file dir
+    appdir_sub <- file.path(appdir, "saved_manuals")
+    if (!dir.exists(appdir_sub)) {
+      dir.create(appdir_sub, recursive = TRUE, showWarnings = FALSE)
+    }
+    fpDIR(appdir_sub)
+
+    notmessage <- HTML(
+      sprintf(
+        "Your files for this session will be stored in you personal user directory under, <b>%s/%s</b>.",
+        appdir, usr
+      ) %>%
+        stringr::str_remove_all("\\n") %>%
+        stringr::str_squish()
+    )
+
+    showNotification(
+      ui = notmessage,
+      #duration = NULL,
+      id = "userinfostart",
+      type = "message",
+      session = session,
+      closeButton = T
+    )
+  })
   ######################################################################################
   ##                SERVER ADMIN SETTINGS
   ######################################################################################
   ADMIN<-reactiveValues()
   # filepath for admin
   fpadm<-reactiveVal(NULL)
-  # filepath creation
+  # # filepath creation
   observe({
-    appdir<-file.path(tools::R_user_dir("susoquestionnairemanual", which = "data"), "admin")
-    if(!dir.exists(appdir)){
-      dir.create(appdir, recursive = TRUE, showWarnings = FALSE)
-    }
+    # create admin file
+    appdir<-req(fpadmDIR())
     admfile<-file.path(appdir, "admin_settings.rds")
     fpadm(admfile)
   })
@@ -243,15 +299,15 @@ main_server<-function(input, output, session) {
 
   ##  4.4. SAVE/Load Existing Manual
   # 1. Settings
-  fpDIR<-reactiveVal(NULL)
-  observe({
-    appdir<-file.path(tools::R_user_dir("susoquestionnairemanual", which = "data"), "saved_manuals")
-    if(!dir.exists(appdir)){
-      dir.create(appdir, recursive = TRUE, showWarnings = FALSE)
-    }
-
-    fpDIR(appdir)
-  })
+  # fpDIR<-reactiveVal(NULL)
+  # observe({
+  #   appdir<-file.path(tools::R_user_dir("susoquestionnairemanual", which = "data"), "saved_manuals")
+  #   if(!dir.exists(appdir)){
+  #     dir.create(appdir, recursive = TRUE, showWarnings = FALSE)
+  #   }
+  #
+  #   fpDIR(appdir)
+  # })
   smTabDir<-list(dom="t", pagelength=500, scrollY="250px", scrollcollapse=TRUE, paging=FALSE)
   # 2. Save File
   observeEvent(input$saveProg, {
@@ -274,7 +330,7 @@ main_server<-function(input, output, session) {
   # 4. DT Directory
   flDIR<-reactiveVal(NULL)
   observe({
-    #shiny::invalidateLater(500)
+    req(fpDIR())
     lf<-list.files(fpDIR(), pattern = ".csv$")
 
     if(length(lf)>0) flDIR(lf)

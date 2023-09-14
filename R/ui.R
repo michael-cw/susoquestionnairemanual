@@ -22,6 +22,9 @@ main_ui<-function(request){
                 tags$br(),
                 shinyjs::useShinyjs(),
                 waiter::use_waiter(),
+                # shiny alert conditional on version
+                if (utils::packageVersion("shinyalert") < 3) shinyalert::useShinyalert(),
+                startupModalUI("startupModal"),
                 ##  STYLES
                 tags$style(
                   ".btn-file {
@@ -37,6 +40,26 @@ main_ui<-function(request){
                   #slide-out.sidenav {
                     width: 400px;
                   }
+                  .shiny-notification {
+                     width: 250px !important;
+                     position:fixed;
+                     top: 65px;
+                     right: 10px;
+                     color: #FFFFFF;
+                     background-color: #0d47a1;
+                  }
+
+                  .shiny-notification-content-text {
+                    overflow-wrap: break-word !important;
+                  }
+
+                  /*change color and opacity for warning */
+                  .shiny-notification-warning {
+                         background-color:#ff0f0f;
+                         color: #FFFFFF;
+                         opacity: 0.7;
+                  }
+
                   .tippy-tooltip.suso-theme {
                     background-color: #0d47a1;
                     font-weight: bold;
