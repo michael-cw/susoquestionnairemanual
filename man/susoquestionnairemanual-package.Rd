@@ -8,6 +8,13 @@
 \description{
 A simple shiny application to generate a questionnaire document in either HTML, MS Word, or in MS Powerpoint. Questionnaire can be uploaded as the exported json, or directly from the users Survey Solutions Server.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://michael-cw.github.io/susoquestionnairemanual/}
+}
+
+}
 \author{
 \strong{Maintainer}: Michael Wild \email{mwild@worldbank.org}
 

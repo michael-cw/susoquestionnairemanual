@@ -1,6 +1,8 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+<a href='https://docs.mysurvey.solutions/'><img src="vignettes/img/susotools.png" align="right" height="139"/></a>
+
 # Survey Solutions Questionnaire Manual Generator
 
 <!-- badges: start -->
