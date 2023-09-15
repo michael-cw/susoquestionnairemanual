@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-<a href='https://docs.mysurvey.solutions/'><img src="vignettes/img/susotools.png" align="right" height="139"/></a>
+<a href='https://docs.mysurvey.solutions/'><img src="man/figures/susotools.png" align="right" height="139" style="float:right; height:139px;"/></a>
 
 # Survey Solutions Questionnaire Manual Generator
 
