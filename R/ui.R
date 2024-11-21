@@ -23,7 +23,7 @@ main_ui<-function(request){
                 shinyjs::useShinyjs(),
                 waiter::use_waiter(),
                 # shiny alert conditional on version
-                if (utils::packageVersion("shinyalert") < 3) shinyalert::useShinyalert(),
+                if (utils::packageVersion("shinyalert") < '3.0.0') shinyalert::useShinyalert(),
                 startupModalUI("startupModal"),
                 ##  STYLES
                 tags$style(
